@@ -21,32 +21,32 @@ function App() {
 
   return (
     <div className="container">
-      <h1>Digital Wallet</h1>
+      <h1>Billetera Digital</h1>
 
       <div className="nav">
         <button
           className={`nav-btn ${activeTab === 'register' ? 'active' : ''}`}
           onClick={() => setActiveTab('register')}
         >
-          Register Client
+          Registro
         </button>
         <button
           className={`nav-btn ${activeTab === 'recharge' ? 'active' : ''}`}
           onClick={() => setActiveTab('recharge')}
         >
-          Recharge Wallet
+          Recargar
         </button>
         <button
           className={`nav-btn ${activeTab === 'payment' ? 'active' : ''}`}
           onClick={() => setActiveTab('payment')}
         >
-          Make Payment
+          Pagar
         </button>
         <button
           className={`nav-btn ${activeTab === 'balance' ? 'active' : ''}`}
           onClick={() => setActiveTab('balance')}
         >
-          Check Balance
+          Consultar Saldo
         </button>
       </div>
 

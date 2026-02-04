@@ -16,28 +16,28 @@ export default function Balance() {
             const res = await axios.get(`${API_URL}/consultarSaldo`, { params: formData });
             setResult(res.data.data.balance);
         } catch (err) {
-            setError(err.response?.data?.message || 'Error fetching balance');
+            setError(err.response?.data?.message || 'Error al consultar saldo');
         }
     };
 
     return (
         <div className="card fade-in">
-            <h2>Check Balance</h2>
+            <h2>Consultar Saldo</h2>
             <form onSubmit={handleSubmit}>
                 <div className="input-group">
-                    <label>Document ID</label>
+                    <label>Documento de Identidad</label>
                     <input required type="text" value={formData.document} onChange={e => setFormData({ ...formData, document: e.target.value })} />
                 </div>
                 <div className="input-group">
-                    <label>Phone</label>
+                    <label>Celular</label>
                     <input required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                 </div>
-                <button className="btn" type="submit">Check Balance</button>
+                <button className="btn" type="submit">Consultar</button>
             </form>
 
             {result !== null && (
                 <div className="alert alert-success" style={{ textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                    Balance: ${result}
+                    Saldo: ${result}
                 </div>
             )}
             {error && <div className="alert alert-error">{error}</div>}
