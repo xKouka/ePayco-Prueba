@@ -8,45 +8,76 @@ This is a full-stack application simulating a digital wallet, built with **NestJ
 - MongoDB (Running on `mongodb://127.0.0.1:27017`)
 - Git
 
+
+## Architecture: Microservices / Hybrid
+This system demonstrates knowledge of both **NestJS** and **Laravel** by splitting responsibilities:
+
+1.  **NestJS (Main API Gateway & Transaction Core)**:
+    -   Handles all Client interaction.
+    -   Manages the Wallet Ledger (MongoDB).
+    -   Communicates with Laravel Service for User Registration and Notification.
+    -   **Resilience**: If the Laravel service is offline (e.g., PHP not installed), NestJS falls back to local simulation so the app remains functional.
+
+2.  **Laravel (User & Notification Service)**:
+    -   Located in `microservice-laravel`.
+    -   Manages User Records (MySQL/SQL).
+    -   Simulates Email Sending (Token Dispatch).
+    -   *Note: This service requires PHP and Composer to run. Code is provided in `microservice-laravel/`.*
+
 ## Installation
 
-1. **Clone the repository** (if not already):
-   ```bash
-   git clone <repo-url>
-   cd ePayco
-   ```
+1.  **Clone the repository**:
+    ```bash
+    git clone <repo-url>
+    cd ePayco
+    ```
 
-2. **Install Server Dependencies**:
-   ```bash
-   cd server
-   npm install
-   ```
+2.  **Install NestJS Server Dependencies**:
+    ```bash
+    cd server
+    npm install
+    ```
 
-3. **Install Client Dependencies**:
-   ```bash
-   cd ../client
-   npm install
-   ```
+3.  **Install React Client Dependencies**:
+    ```bash
+    cd ../client
+    npm install
+    ```
+
+4.  **(Optional) Install Laravel Service Dependencies**:
+    *Requires PHP & Composer*
+    ```bash
+    cd ../microservice-laravel
+    composer install
+    php artisan migrate
+    php artisan serve
+    ```
 
 ## Database Configuration
-The application uses **MongoDB**. Ensure you have a MongoDB instance running locally on the default port `27017`.
-The connection string is hardcoded in `server/src/app.module.ts`: `mongodb://127.0.0.1:27017/epayco_wallet`.
+- **MongoDB**: Used by NestJS (`mongodb://127.0.0.1:27017/epayco_wallet`).
+- **MySQL/SQLite**: Used by Laravel (Configure in `.env` if running Laravel).
 
 ## Running the Application
 
-### backend (API)
+### 1. Start the NestJS Server (Backend)
 From the `server` directory:
 ```bash
 npm run start:dev
 ```
-The API will run on `http://localhost:3000`.
+*The server will attempt to contact Laravel. If unreachable, it will log a warning and use local fallback logic.*
 
-### frontend (Client)
+### 2. Start the React Client (Frontend)
 From the `client` directory:
 ```bash
 npm run dev
 ```
-The application will run on `http://localhost:5173` (or similar).
+
+### 3. (Optional) Start Laravel Service
+From the `microservice-laravel` directory:
+```bash
+php artisan serve
+```
+
 
 ## Usage Guide
 

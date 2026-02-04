@@ -1,7 +1,9 @@
 
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { HttpService } from '@nestjs/axios';
+import { firstValueFrom } from 'rxjs';
 import { Client, ClientDocument } from './schemas/client.schema';
 import { Session, SessionDocument } from './schemas/session.schema';
 import {
@@ -11,13 +13,17 @@ import {
     ConfirmPaymentDto,
     CheckBalanceDto,
 } from './dto/wallet.dto';
-import { v4 as uuidv4 } from 'uuid'; // I might need to install uuid or just use crypto
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class WalletService {
+    private readonly logger = new Logger(WalletService.name);
+    private readonly laravelApiUrl = 'http://localhost:8000/api'; // Laravel Service URL
+
     constructor(
         @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
         @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
+        private readonly httpService: HttpService,
     ) { }
 
     async registerClient(createClientDto: CreateClientDto) {
@@ -26,6 +32,17 @@ export class WalletService {
         if (existing) {
             throw new BadRequestException('Client already exists');
         }
+
+        // Call Laravel Service to register User (Sync User Data)
+        try {
+            await firstValueFrom(
+                this.httpService.post(`${this.laravelApiUrl}/clients`, createClientDto)
+            );
+            this.logger.log('Client registered in Laravel Service');
+        } catch (error) {
+            this.logger.warn('Laravel Service unavailable. Registering locally only.');
+        }
+
         const newClient = new this.clientModel(createClientDto);
         await newClient.save();
         return {
@@ -63,16 +80,28 @@ export class WalletService {
         const token = Math.floor(100000 + Math.random() * 900000).toString();
         const sessionId = uuidv4();
 
+        // Call Laravel Service to send Token (Email Service)
+        try {
+            await firstValueFrom(
+                this.httpService.post(`${this.laravelApiUrl}/send-token`, {
+                    email: client.email,
+                    token: token
+                })
+            );
+            this.logger.log(`Token sent via Laravel to ${client.email}`);
+        } catch (error) {
+            this.logger.warn(`Laravel Service unavailable. Simulating email token: ${token}`);
+            console.log(`[FALLBACK] Sending token ${token} to email ${client.email}`);
+        }
+
         const session = new this.sessionModel({
             sessionId,
             token,
-            clientId: document, // Using document as reference
+            clientId: document,
             amount,
             status: 'PENDING',
         });
         await session.save();
-
-        console.log(`Sending token ${token} to email ${client.email}`); // Simulation
 
         return {
             success: true,
