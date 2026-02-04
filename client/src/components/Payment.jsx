@@ -11,7 +11,7 @@ export default function Payment() {
 
     const handleRequest = async (e) => {
         e.preventDefault();
-        setStatus({ type: 'loading', msg: 'Requesting Payment...' });
+        setStatus({ type: 'loading', msg: 'Solicitando Pago...' });
         try {
             const res = await axios.post(`${API_URL}/solicitarPago`, {
                 ...formData,
@@ -19,55 +19,55 @@ export default function Payment() {
             });
             setSession({ ...session, sessionId: res.data.data.sessionId });
             setStep(2);
-            setStatus({ type: 'success', msg: 'Token sent to email! Check server console for simulation.' });
+            setStatus({ type: 'success', msg: '¡Token enviado al email! Revisa la consola del servidor (simulación).' });
         } catch (err) {
-            setStatus({ type: 'error', msg: err.response?.data?.message || 'Error requesting payment' });
+            setStatus({ type: 'error', msg: err.response?.data?.message || 'Error al solicitar pago' });
         }
     };
 
     const handleConfirm = async (e) => {
         e.preventDefault();
-        setStatus({ type: 'loading', msg: 'Confirming...' });
+        setStatus({ type: 'loading', msg: 'Confirmando...' });
         try {
             const res = await axios.post(`${API_URL}/confirmarPago`, {
                 sessionId: session.sessionId,
                 token: session.token
             });
-            setStatus({ type: 'success', msg: `Payment Confirmed! New Balance: $${res.data.data.newBalance}` });
+            setStatus({ type: 'success', msg: `¡Pago Confirmado! Nuevo Saldo: $${res.data.data.newBalance}` });
             setStep(1); // Reset or stay
         } catch (err) {
-            setStatus({ type: 'error', msg: err.response?.data?.message || 'Invalid Token or Session' });
+            setStatus({ type: 'error', msg: err.response?.data?.message || 'Token o Sesión inválidos' });
         }
     };
 
     return (
         <div className="card fade-in">
-            <h2>{step === 1 ? 'Make a Payment' : 'Confirm Payment'}</h2>
+            <h2>{step === 1 ? 'Realizar Pago' : 'Confirmar Pago'}</h2>
             {step === 1 ? (
                 <form onSubmit={handleRequest}>
                     <div className="input-group">
-                        <label>Document ID</label>
+                        <label>Documento de Identidad</label>
                         <input required type="text" value={formData.document} onChange={e => setFormData({ ...formData, document: e.target.value })} />
                     </div>
                     <div className="input-group">
-                        <label>Phone</label>
+                        <label>Celular</label>
                         <input required type="tel" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                     </div>
                     <div className="input-group">
-                        <label>Amount</label>
+                        <label>Monto</label>
                         <input required type="number" value={formData.amount} onChange={e => setFormData({ ...formData, amount: e.target.value })} />
                     </div>
-                    <button className="btn" type="submit">Request Token</button>
+                    <button className="btn" type="submit">Solicitar Token</button>
                 </form>
             ) : (
                 <form onSubmit={handleConfirm}>
-                    <p style={{ marginBottom: '1rem', color: '#94a3b8' }}>Session ID: {session.sessionId}</p>
+                    <p style={{ marginBottom: '1rem', color: '#94a3b8' }}>ID Sesión: {session.sessionId}</p>
                     <div className="input-group">
-                        <label>Enter 6-digit Token</label>
+                        <label>Ingresa Token de 6 dígitos</label>
                         <input required type="text" maxLength="6" value={session.token} onChange={e => setSession({ ...session, token: e.target.value })} />
                     </div>
-                    <button className="btn" type="submit">Confirm Payment</button>
-                    <button type="button" className="btn" style={{ marginTop: '1rem', background: '#334155' }} onClick={() => setStep(1)}>Cancel</button>
+                    <button className="btn" type="submit">Confirmar Pago</button>
+                    <button type="button" className="btn" style={{ marginTop: '1rem', background: '#334155' }} onClick={() => setStep(1)}>Cancelar</button>
                 </form>
             )}
             {status && <div className={`alert alert-${status.type === 'error' ? 'error' : 'success'}`}>{status.msg}</div>}
