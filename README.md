@@ -1,104 +1,80 @@
 
-# Digital Wallet Simulation (ePayco Test)
+# 💳 Simulación de Billetera Digital (Prueba ePayco)
 
-This is a full-stack application simulating a digital wallet, built with **NestJS** (Backend) and **React** (Frontend).
+Esta es una aplicación robusta de billetera digital diseñada con un frontend agnóstico que puede conectarse tanto a un servidor **NestJS** como a uno **Laravel**, siempre que implementen la misma interfaz de API REST.
 
-## Prerequisites
-- Node.js (v14+)
-- MongoDB (Running on `mongodb://127.0.0.1:27017`)
-- Git
+---
 
+## 🚀 Requisitos Previos
+- **Node.js**: v14 o superior.
+- **MongoDB**: (Requerido para el servidor NestJS) corriendo en `mongodb://127.0.0.1:27017`.
+- **Navegador**: Chrome, Firefox o Edge (últimas versiones).
 
-## Architecture: Microservices / Hybrid
-This system demonstrates knowledge of both **NestJS** and **Laravel** by splitting responsibilities:
+---
 
-1.  **NestJS (Main API Gateway & Transaction Core)**:
-    -   Handles all Client interaction.
-    -   Manages the Wallet Ledger (MongoDB).
-    -   Communicates with Laravel Service for User Registration and Notification.
-    -   **Resilience**: If the Laravel service is offline (e.g., PHP not installed), NestJS falls back to local simulation so the app remains functional.
+## 🛠️ Instalación y Configuración
 
-2.  **Laravel (User & Notification Service)**:
-    -   Located in `microservice-laravel`.
-    -   Manages User Records (MySQL/SQL).
-    -   Simulates Email Sending (Token Dispatch).
-    -   *Note: This service requires PHP and Composer to run. Code is provided in `microservice-laravel/`.*
-
-## Installation
-
-1.  **Clone the repository**:
-    ```bash
-    git clone <repo-url>
-    cd ePayco
-    ```
-
-2.  **Install NestJS Server Dependencies**:
-    ```bash
-    cd server
-    npm install
-    ```
-
-3.  **Install React Client Dependencies**:
-    ```bash
-    cd ../client
-    npm install
-    ```
-
-4.  **(Optional) Install Laravel Service Dependencies**:
-    *Requires PHP & Composer*
-    ```bash
-    cd ../microservice-laravel
-    composer install
-    php artisan migrate
-    php artisan serve
-    ```
-
-## Database Configuration
-- **MongoDB**: Used by NestJS (`mongodb://127.0.0.1:27017/epayco_wallet`).
-- **MySQL/SQLite**: Used by Laravel (Configure in `.env` if running Laravel).
-
-## Running the Application
-
-### 1. Start the NestJS Server (Backend)
-From the `server` directory:
+### 1. Clonar y Preparar
 ```bash
-npm run start:dev
+git clone https://github.com/xKouka/ePayco-Prueba
+cd ePayco
 ```
-*The server will attempt to contact Laravel. If unreachable, it will log a warning and use local fallback logic.*
 
-### 2. Start the React Client (Frontend)
-From the `client` directory:
+### 2. Frontend (React + Vite)
+El frontend está configurado para conectar por defecto con NestJS (Puerto 3000). Para cambiar a Laravel (Puerto 8000), edita `client/src/config.js`.
+
 ```bash
+cd client
+npm install
 npm run dev
 ```
 
-### 3. (Optional) Start Laravel Service
-From the `microservice-laravel` directory:
+### 3. Backend (Opción: NestJS)
+Si decides usar el servidor de NestJS:
 ```bash
-php artisan serve
+cd server
+npm install
+npm run start:dev
 ```
 
+---
 
-## Usage Guide
+## 🏗️ Puntos Técnicos Clave
 
-1. **Register Client**: Go to the "Register Client" tab. Enter Document ID, Name, Email, and Phone.
-2. **Recharge Wallet**: Go to "Recharge Wallet". Enter Document ID, Phone, and Amount to add funds.
-3. **Make Payment**:
-   - Go to "Make Payment".
-   - **Step 1**: Enter details and amount. Click "Request Token".
-   - **Step 2**: Check the **Server Console** (terminal where `npm run start:dev` is running) to see the generated 6-digit token.
-   - **Step 3**: Enter the Token in the confirmation form.
-4. **Check Balance**: Go to "Check Balance" to view current funds.
+### 🗄️ Acceso a Datos
+- **Arquitectura Standalone**: Tanto NestJS como Laravel operan como backends independientes.
+- **NestJS**: Utiliza **Mongoose** para interactuar con MongoDB.
+- **Laravel**: Utilizaría Eloquent con la base de datos de tu elección (MySQL/SQLite).
 
-## API Endpoints (Postman)
+### 🌐 Respuesta Uniforme (API Standards)
+Todas las respuestas siguen el formato:
+```json
+{
+  "status": 200,          
+  "message": "...", 
+  "data": { ... },        
+  "error": null           
+}
+```
 
-- `POST /wallet/registerCliente`
-- `POST /wallet/recargarBilletera`
-- `POST /wallet/solicitarPago`
-- `POST /wallet/confirmarPago`
-- `GET /wallet/consultarSaldo` (Params: `document`, `phone`)
+---
 
-## Technologies Used
-- **Frontend**: React, Vite, Vanilla CSS (Premium Design)
-- **Backend**: NestJS, Mongoose, Class-Validator
-- **Database**: MongoDB
+## 📡 Endpoints de la API REST
+
+| Método | Endpoint | Descripción |
+| :--- | :--- | :--- |
+| `POST` | `/registroCliente` | Registra un nuevo cliente. |
+| `POST` | `/recargarBilletera` | Recarga saldo. |
+| `POST` | `/solicitarPago` | Genera token de pago. |
+| `POST` | `/confirmarPago` | Confirma el pago con token. |
+| `GET` | `/consultarSaldo` | Obtiene el saldo (query params: `document`, `phone`). |
+
+*Nota: En el servidor NestJS los endpoints están bajo el prefijo `/wallet/`.*
+
+---
+
+## 🧪 Pruebas con Postman
+Importa `ePayco_Wallet.postman_collection.json` y ajusta la variable `base_url` según el servidor que estés usando.
+
+---
+*Entregable para la prueba técnica de ePayco.*
