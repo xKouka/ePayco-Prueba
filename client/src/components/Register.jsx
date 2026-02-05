@@ -11,7 +11,7 @@ export default function Register() {
         e.preventDefault();
         setStatus({ type: 'loading', msg: 'Procesando...' });
         try {
-            const res = await axios.post(`${API_URL}/registerCliente`, formData);
+            const res = await axios.post(`${API_URL}/registroCliente`, formData);
             setStatus({ type: 'success', msg: `¡Cliente registrado! ID: ${res.data.data._id}` });
         } catch (err) {
             setStatus({ type: 'error', msg: err.response?.data?.message || 'Error ocurrido' });

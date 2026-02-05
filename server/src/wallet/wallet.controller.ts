@@ -13,7 +13,7 @@ import {
 export class WalletController {
     constructor(private readonly walletService: WalletService) { }
 
-    @Post('registerCliente')
+    @Post('registroCliente')
     @UsePipes(new ValidationPipe())
     registerClient(@Body() createClientDto: CreateClientDto) {
         return this.walletService.registerClient(createClientDto);
