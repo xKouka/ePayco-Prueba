@@ -1,16 +1,13 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { WalletController } from './wallet.controller';
 import { WalletService } from './wallet.service';
-import { Client, ClientSchema } from './schemas/client.schema';
-import { Session, SessionSchema } from './schemas/session.schema';
+import { Client } from './entities/client.entity';
+import { WalletSession } from './entities/session.entity';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Client.name, schema: ClientSchema },
-      { name: Session.name, schema: SessionSchema },
-    ]),
+    TypeOrmModule.forFeature([Client, WalletSession]),
   ],
   controllers: [WalletController],
   providers: [WalletService],

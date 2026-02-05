@@ -1,9 +1,8 @@
-
 import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Client, ClientDocument } from './schemas/client.schema';
-import { Session, SessionDocument } from './schemas/session.schema';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Client } from './entities/client.entity';
+import { WalletSession } from './entities/session.entity';
 import {
     CreateClientDto,
     RechargeWalletDto,
@@ -18,21 +17,21 @@ export class WalletService {
     private readonly logger = new Logger(WalletService.name);
 
     constructor(
-        @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
-        @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
+        @InjectRepository(Client) private clientRepository: Repository<Client>,
+        @InjectRepository(WalletSession) private sessionRepository: Repository<WalletSession>,
     ) { }
 
     async registerClient(createClientDto: CreateClientDto) {
         const { document } = createClientDto;
-        const existing = await this.clientModel.findOne({ document });
+        const existing = await this.clientRepository.findOne({ where: { document } });
         if (existing) {
             throw new BadRequestException('El cliente ya está registrado');
         }
 
-        const newClient = new this.clientModel(createClientDto);
-        await newClient.save();
+        const newClient = this.clientRepository.create(createClientDto);
+        await this.clientRepository.save(newClient);
 
-        this.logger.log(`Cliente registrado localmente: ${document}`);
+        this.logger.log(`Cliente registrado en MySQL: ${document}`);
 
         return {
             success: true,
@@ -43,12 +42,15 @@ export class WalletService {
 
     async rechargeWallet(rechargeDto: RechargeWalletDto) {
         const { document, phone, amount } = rechargeDto;
-        const client = await this.clientModel.findOne({ document, phone });
+        const client = await this.clientRepository.findOne({ where: { document, phone } });
         if (!client) {
             throw new NotFoundException('Cliente no encontrado o el teléfono no coincide');
         }
-        client.balance += amount;
-        await client.save();
+
+        // Convertimos a número para evitar problemas con decimales en MySQL
+        client.balance = Number(client.balance) + Number(amount);
+        await this.clientRepository.save(client);
+
         return {
             success: true,
             message: 'Billetera recargada exitosamente',
@@ -58,32 +60,31 @@ export class WalletService {
 
     async requestPayment(requestDto: RequestPaymentDto) {
         const { document, phone, amount } = requestDto;
-        const client = await this.clientModel.findOne({ document, phone });
+        const client = await this.clientRepository.findOne({ where: { document, phone } });
         if (!client) {
             throw new NotFoundException('Cliente no encontrado');
         }
-        if (client.balance < amount) {
+        if (Number(client.balance) < Number(amount)) {
             throw new BadRequestException('Saldo insuficiente');
         }
 
         const token = Math.floor(100000 + Math.random() * 900000).toString();
         const sessionId = uuidv4();
 
-        // Simulación de envío de token (en producción se usaría un servicio de correo/SMS)
         this.logger.log(`[SIMULACIÓN EMAIL] Enviando token ${token} a ${client.email}`);
         console.log(`\n************************************************`);
         console.log(` TOKEN DE PAGO PARA ${client.names.toUpperCase()}`);
         console.log(` TOKEN: ${token}`);
         console.log(`************************************************\n`);
 
-        const session = new this.sessionModel({
-            sessionId,
+        const session = this.sessionRepository.create({
+            session_id: sessionId,
             token,
-            clientId: document,
+            client_id: document,
             amount,
             status: 'PENDING',
         });
-        await session.save();
+        await this.sessionRepository.save(session);
 
         return {
             success: true,
@@ -94,7 +95,9 @@ export class WalletService {
 
     async confirmPayment(confirmDto: ConfirmPaymentDto) {
         const { sessionId, token } = confirmDto;
-        const session = await this.sessionModel.findOne({ sessionId, status: 'PENDING' });
+        const session = await this.sessionRepository.findOne({
+            where: { session_id: sessionId, status: 'PENDING' }
+        });
 
         if (!session) {
             throw new NotFoundException('Sesión inválida o expirada');
@@ -103,19 +106,19 @@ export class WalletService {
             throw new BadRequestException('Token inválido');
         }
 
-        const client = await this.clientModel.findOne({ document: session.clientId });
+        const client = await this.clientRepository.findOne({ where: { document: session.client_id } });
         if (!client) {
             throw new NotFoundException('Cliente no encontrado');
         }
-        if (client.balance < session.amount) {
+        if (Number(client.balance) < Number(session.amount)) {
             throw new BadRequestException('Saldo insuficiente');
         }
 
-        client.balance -= session.amount;
-        await client.save();
+        client.balance = Number(client.balance) - Number(session.amount);
+        await this.clientRepository.save(client);
 
         session.status = 'COMPLETED';
-        await session.save();
+        await this.sessionRepository.save(session);
 
         return {
             success: true,
@@ -126,7 +129,7 @@ export class WalletService {
 
     async getBalance(checkBalanceDto: CheckBalanceDto) {
         const { document, phone } = checkBalanceDto;
-        const client = await this.clientModel.findOne({ document, phone });
+        const client = await this.clientRepository.findOne({ where: { document, phone } });
         if (!client) {
             throw new NotFoundException('Cliente no encontrado');
         }
