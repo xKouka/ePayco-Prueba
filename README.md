@@ -1,49 +1,50 @@
 
-# 💳 Simulación de Billetera Digital (Prueba ePayco)
+# 💳 Proyecto Billetera Digital - ePayco
 
-Esta es una aplicación robusta de billetera digital con un frontend agnóstico que puede conectarse a dos implementaciones diferentes de backend: **NestJS** y **Laravel**. Ambos servidores comparten la **misma base de datos MySQL**, lo que permite una integración fluida entre tecnologías.
-
----
-
-## 🚀 Requisitos Previos
-- **Node.js**: v14 o superior.
-- **XAMPP / Laragon**: Para el servidor **MySQL** y **Apache**.
-- **PHP/Composer**: (Para el servidor Laravel).
-- **Navegador**: Chrome, Firefox o Edge.
+Esta es una solución integral de **Billetera Digital** desarrollada como prueba técnica. Destaca por su arquitectura **híbrida y agnóstica**, permitiendo funcionar indistintamente con un backend en **Node.js (NestJS)** o **PHP (Laravel 8)**, compartiendo una base de datos unificada en **MySQL**.
 
 ---
 
-## 🛠️ Instalación y Configuración
+## 🌟 Características Principales
 
-### 1. Preparar la Base de Datos (MySQL)
-1. Abre el **XAMPP Control Panel** e inicia **MySQL**.
-2. Entra a `http://localhost/phpmyadmin` y crea una base de datos llamada `epayco_wallet`.
+- **Frontend React Moderno**: Interfaz dinámica, responsive y validaciones estrictas.
+- **Doble Backend Híbrido**: Implementaciones completas en NestJS y Laravel.
+- **Auto-Detección de Servidor**: El frontend detecta automáticamente qué servidor está encendido y se conecta a él sin configuración manual.
+- **Persistencia Unificada**: Ambos backends utilizan la misma base de datos MySQL (XAMPP).
+- **Validaciones Senior**: Protección contra nombres con números, emails inválidos y documentos no numéricos.
+- **Estandarización de API**: Respuestas uniformes `{ status, message, data, error }`.
 
 ---
 
-### 2. Configurar el Frontend (React)
-Puedes alternar entre backends editando `client/src/config.js`.
+## 🚀 Guía de Inicio Rápido
 
+### 1. Configuración de Base de Datos (MySQL)
+El proyecto utiliza **XAMPP** para la persistencia.
+1. Inicia el módulo **MySQL** en tu XAMPP Control Panel.
+2. Accede a `http://localhost/phpmyadmin/`.
+3. Crea una nueva base de datos llamada: **`epayco_wallet`**.
+
+---
+
+### 2. Instalación y Ejecución
+
+#### 💻 Frontend (React + Vite)
+El cliente detectará automáticamente si prendes el servidor de Nest o el de Laravel.
 ```bash
 cd client
 npm install
 npm run dev
 ```
 
----
-
-### 3. Ejecutar Backend: Opción A (NestJS)
-Ubicado en `/server`. Ahora usa **MySQL** (TypeORM).
+#### 🛡️ Opción A: Backend NestJS (Recomendado)
 ```bash
 cd server
 npm install
 npm run start:dev
 ```
+*Las tablas se crearán automáticamente al iniciar.*
 
----
-
-### 4. Ejecutar Backend: Opción B (Laravel)
-Ubicado en `/server-laravel`. Usa **MySQL** (Eloquent).
+#### 🐘 Opción B: Backend Laravel
 ```bash
 cd server-laravel
 composer install
@@ -53,42 +54,34 @@ php artisan serve
 
 ---
 
-## 🏗️ Puntos Técnicos
+## 📡 Endpoints de la API
 
-### 🗄️ Gestión de Datos Unificada
-- **Base de Datos**: Ambos backends escriben y leen de la misma base de datos `epayco_wallet` en MySQL.
-- **NestJS**: Implementado con **TypeORM** y el driver `mysql2`.
-- **Laravel**: Implementado con **Eloquent** (ORM nativo).
+Ambos backends implementan los mismos servicios:
 
-### 🌐 Respuesta Estandarizada
-Ambas APIs devuelven el mismo formato JSON, permitiendo que el cliente cambie de servidor en cualquier momento sin afectar la UI.
-```json
-{
-  "status": 200,
-  "message": "...",
-  "data": { ... },
-  "error": null
-}
-```
+| Método | Ruta NestJS | Ruta Laravel | Descripción |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/wallet/registroCliente` | `/api/wallet/registroCliente` | Registro de nuevos clientes |
+| `POST` | `/wallet/recargarBilletera` | `/api/wallet/recargarBilletera` | Recargas de saldo |
+| `POST` | `/wallet/solicitarPago` | `/api/wallet/solicitarPago` | Genera token de 6 dígitos |
+| `POST` | `/wallet/confirmarPago` | `/api/wallet/confirmarPago` | Valida token y procesa pago |
+| `GET` | `/wallet/consultarSaldo` | `/api/wallet/consultarSaldo` | Consulta de saldo actual |
 
 ---
 
-## 📡 Endpoints de la API REST
+## 🧪 Pruebas y Colección de Postman
 
-| Método | Endpoint | Descripción |
-| :--- | :--- | :--- |
-| `POST` | `/registroCliente` | Registra un nuevo cliente. |
-| `POST` | `/recargarBilletera` | Recarga saldo. |
-| `POST` | `/solicitarPago` | Genera token de pago. |
-| `POST` | `/confirmarPago` | Confirma el pago con token. |
-| `GET` | `/consultarSaldo` | Obtiene el saldo (query params: `document`, `phone`). |
-
-*Nota: En el servidor NestJS los endpoints están bajo el prefijo `/wallet/`.*
+Se incluye el archivo `ePayco_Wallet.postman_collection.json` en la raíz del proyecto.
+1. Abre Postman e **importa** la colección.
+2. Elige el backend que desees probar (NestJS puerto 3000 o Laravel puerto 8000).
+3. Los **tokens de pago** se pueden visualizar en la consola/terminal de cada servidor al momento de solicitar un pago.
 
 ---
 
-## 🧪 Pruebas con Postman
-Importa `ePayco_Wallet.postman_collection.json` y ajusta la variable `base_url` según el servidor que estés usando.
+## 📂 Estructura del Proyecto
+
+- `/client`: Frontend en React, Vite y CSS moderno.
+- `/server`: Backend robusto en NestJS con TypeORM.
+- `/server-laravel`: Backend potente en Laravel 8 con Eloquent.
 
 ---
-*Entregable para la prueba técnica de ePayco.*
+*Desarrollado con excelencia para la prueba técnica de ePayco.*
