@@ -2,8 +2,6 @@
 import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { HttpService } from '@nestjs/axios';
-import { firstValueFrom } from 'rxjs';
 import { Client, ClientDocument } from './schemas/client.schema';
 import { Session, SessionDocument } from './schemas/session.schema';
 import {
@@ -18,36 +16,27 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class WalletService {
     private readonly logger = new Logger(WalletService.name);
-    private readonly laravelApiUrl = 'http://localhost:8000/api'; // Laravel Service URL
 
     constructor(
         @InjectModel(Client.name) private clientModel: Model<ClientDocument>,
         @InjectModel(Session.name) private sessionModel: Model<SessionDocument>,
-        private readonly httpService: HttpService,
     ) { }
 
     async registerClient(createClientDto: CreateClientDto) {
         const { document } = createClientDto;
         const existing = await this.clientModel.findOne({ document });
         if (existing) {
-            throw new BadRequestException('Client already exists');
-        }
-
-        // Call Laravel Service to register User (Sync User Data)
-        try {
-            await firstValueFrom(
-                this.httpService.post(`${this.laravelApiUrl}/clients`, createClientDto)
-            );
-            this.logger.log('Client registered in Laravel Service');
-        } catch (error) {
-            this.logger.warn('Laravel Service unavailable. Registering locally only.');
+            throw new BadRequestException('El cliente ya está registrado');
         }
 
         const newClient = new this.clientModel(createClientDto);
         await newClient.save();
+
+        this.logger.log(`Cliente registrado localmente: ${document}`);
+
         return {
             success: true,
-            message: 'Client registered successfully',
+            message: 'Cliente registrado exitosamente',
             data: newClient,
         };
     }
@@ -56,13 +45,13 @@ export class WalletService {
         const { document, phone, amount } = rechargeDto;
         const client = await this.clientModel.findOne({ document, phone });
         if (!client) {
-            throw new NotFoundException('Client not found or phone mismatch');
+            throw new NotFoundException('Cliente no encontrado o el teléfono no coincide');
         }
         client.balance += amount;
         await client.save();
         return {
             success: true,
-            message: 'Wallet recharged successfully',
+            message: 'Billetera recargada exitosamente',
             data: { balance: client.balance },
         };
     }
@@ -71,28 +60,21 @@ export class WalletService {
         const { document, phone, amount } = requestDto;
         const client = await this.clientModel.findOne({ document, phone });
         if (!client) {
-            throw new NotFoundException('Client not found');
+            throw new NotFoundException('Cliente no encontrado');
         }
         if (client.balance < amount) {
-            throw new BadRequestException('Insufficient balance');
+            throw new BadRequestException('Saldo insuficiente');
         }
 
         const token = Math.floor(100000 + Math.random() * 900000).toString();
         const sessionId = uuidv4();
 
-        // Call Laravel Service to send Token (Email Service)
-        try {
-            await firstValueFrom(
-                this.httpService.post(`${this.laravelApiUrl}/send-token`, {
-                    email: client.email,
-                    token: token
-                })
-            );
-            this.logger.log(`Token sent via Laravel to ${client.email}`);
-        } catch (error) {
-            this.logger.warn(`Laravel Service unavailable. Simulating email token: ${token}`);
-            console.log(`[FALLBACK] Sending token ${token} to email ${client.email}`);
-        }
+        // Simulación de envío de token (en producción se usaría un servicio de correo/SMS)
+        this.logger.log(`[SIMULACIÓN EMAIL] Enviando token ${token} a ${client.email}`);
+        console.log(`\n************************************************`);
+        console.log(` TOKEN DE PAGO PARA ${client.names.toUpperCase()}`);
+        console.log(` TOKEN: ${token}`);
+        console.log(`************************************************\n`);
 
         const session = new this.sessionModel({
             sessionId,
@@ -105,7 +87,7 @@ export class WalletService {
 
         return {
             success: true,
-            message: 'Token sent to email',
+            message: 'Token enviado al correo electrónico (Simulado en consola)',
             data: { sessionId },
         };
     }
@@ -115,18 +97,18 @@ export class WalletService {
         const session = await this.sessionModel.findOne({ sessionId, status: 'PENDING' });
 
         if (!session) {
-            throw new NotFoundException('Session invalid or expired');
+            throw new NotFoundException('Sesión inválida o expirada');
         }
         if (session.token !== token) {
-            throw new BadRequestException('Invalid token');
+            throw new BadRequestException('Token inválido');
         }
 
         const client = await this.clientModel.findOne({ document: session.clientId });
         if (!client) {
-            throw new NotFoundException('Client not found');
+            throw new NotFoundException('Cliente no encontrado');
         }
         if (client.balance < session.amount) {
-            throw new BadRequestException('Insufficient balance');
+            throw new BadRequestException('Saldo insuficiente');
         }
 
         client.balance -= session.amount;
@@ -137,7 +119,7 @@ export class WalletService {
 
         return {
             success: true,
-            message: 'Payment confirmed successfully',
+            message: 'Pago confirmado exitosamente',
             data: { newBalance: client.balance },
         };
     }
@@ -146,11 +128,11 @@ export class WalletService {
         const { document, phone } = checkBalanceDto;
         const client = await this.clientModel.findOne({ document, phone });
         if (!client) {
-            throw new NotFoundException('Client not found');
+            throw new NotFoundException('Cliente no encontrado');
         }
         return {
             success: true,
-            message: 'Balance retrieved',
+            message: 'Saldo consultado exitosamente',
             data: { balance: client.balance },
         };
     }
