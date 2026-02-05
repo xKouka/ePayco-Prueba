@@ -11,8 +11,9 @@ return new class extends Migration {
             $table->id();
             $table->string('document')->unique();
             $table->string('names');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->string('phone');
+            $table->decimal('balance', 15, 2)->default(0);
             $table->timestamps();
         });
     }

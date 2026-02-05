@@ -1,9 +1,12 @@
 
-// Configuración de la API REST
-// Cambia la URL dependiendo de cuál servidor estés ejecutando (NestJS o Laravel)
+// -------------------------------------------------------------------------
+// CONFIGURACIÓN DEL BACKEND
+// -------------------------------------------------------------------------
+// Puedes usar el servidor de NestJS (Puerto 3000) o Laravel (Puerto 8000).
+// Ambas APIs son compatibles y siguen el mismo estándar de respuesta.
 
-// Opción 1: NestJS (Puerto 3000)
+// Opción A: Servidor NestJS (Base de Datos: MongoDB)
 export const API_URL = 'http://localhost:3000/wallet';
 
-// Opción 2: Laravel (Puerto 8000) - Descomentar para usar
-// export const API_URL = 'http://localhost:8000/api'; 
+// Opción B: Servidor Laravel (Base de Datos: SQL)
+// export const API_URL = 'http://localhost:8000/api/wallet'; 

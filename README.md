@@ -1,27 +1,28 @@
 
 # 💳 Simulación de Billetera Digital (Prueba ePayco)
 
-Esta es una aplicación robusta de billetera digital diseñada con un frontend agnóstico que puede conectarse tanto a un servidor **NestJS** como a uno **Laravel**, siempre que implementen la misma interfaz de API REST.
+Esta es una aplicación robusta de billetera digital con un frontend agnóstico que puede conectarse a dos implementaciones diferentes de backend: **NestJS** y **Laravel**. Cada servidor es independiente y puede ser utilizado según la preferencia del desarrollador.
 
 ---
 
 ## 🚀 Requisitos Previos
 - **Node.js**: v14 o superior.
-- **MongoDB**: (Requerido para el servidor NestJS) corriendo en `mongodb://127.0.0.1:27017`.
-- **Navegador**: Chrome, Firefox o Edge (últimas versiones).
+- **MongoDB**: (Para NestJS) corriendo en `mongodb://127.0.0.1:27017`.
+- **PHP/Composer**: (Para Laravel) junto con MySQL o SQLite.
+- **Navegador**: Chrome, Firefox o Edge.
 
 ---
 
 ## 🛠️ Instalación y Configuración
 
-### 1. Clonar y Preparar
+### 1. Preparar el Proyecto
 ```bash
 git clone https://github.com/xKouka/ePayco-Prueba
 cd ePayco
 ```
 
-### 2. Frontend (React + Vite)
-El frontend está configurado para conectar por defecto con NestJS (Puerto 3000). Para cambiar a Laravel (Puerto 8000), edita `client/src/config.js`.
+### 2. Configurar el Frontend (React)
+El frontend puede conectarse a cualquiera de los dos servidores editando el archivo `client/src/config.js`.
 
 ```bash
 cd client
@@ -29,31 +30,40 @@ npm install
 npm run dev
 ```
 
-### 3. Backend (Opción: NestJS)
-Si decides usar el servidor de NestJS:
+### 3. Ejecutar Backend: Opción A (NestJS)
+Ubicado en `/server`. Usa MongoDB.
 ```bash
 cd server
 npm install
 npm run start:dev
 ```
 
+### 4. Ejecutar Backend: Opción B (Laravel)
+Ubicado en `/server-laravel`. Usa SQL.
+```bash
+cd server-laravel
+# Configura tu .env (DB_DATABASE, etc)
+composer install
+php artisan migrate
+php artisan serve
+```
+
 ---
 
-## 🏗️ Puntos Técnicos Clave
+## 🏗️ Puntos Técnicos
 
-### 🗄️ Acceso a Datos
-- **Arquitectura Standalone**: Tanto NestJS como Laravel operan como backends independientes.
-- **NestJS**: Utiliza **Mongoose** para interactuar con MongoDB.
-- **Laravel**: Utilizaría Eloquent con la base de datos de tu elección (MySQL/SQLite).
+### 🗄️ Gestión de Datos
+- **NestJS**: Backend moderno usando TypeORM/Mongoose con MongoDB.
+- **Laravel**: Backend clásico y potente usando Eloquent con MySQL/SQLite.
 
-### 🌐 Respuesta Uniforme (API Standards)
-Todas las respuestas siguen el formato:
+### 🌐 Respuesta Estandarizada
+Ambos servidores devuelven el mismo formato de JSON, lo que permite al frontend cambiar de uno a otro sin tocar ni una línea de código de los componentes:
 ```json
 {
-  "status": 200,          
-  "message": "...", 
-  "data": { ... },        
-  "error": null           
+  "status": 200,
+  "message": "...",
+  "data": { ... },
+  "error": null
 }
 ```
 
