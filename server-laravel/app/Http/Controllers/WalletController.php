@@ -11,9 +11,7 @@ use Illuminate\Support\Facades\Validator;
 
 class WalletController extends Controller
 {
-    /**
-     * Formato de respuesta estandarizado
-     */
+    // Formato de respuesta API
     private function jsonResponse($status, $message, $data = null, $error = null)
     {
         return response()->json([
@@ -98,8 +96,8 @@ class WalletController extends Controller
         $token = strval(rand(100000, 900000));
         $sessionId = (string) Str::uuid();
 
-        // Simulación de envío de token
-        Log::info(" [LARAVEL SIMULACIÓN EMAIL] Enviando token $token a {$client->email}");
+        // Token de seguridad
+        Log::info(" [PAGO] Enviando token $token a {$client->email}");
 
         WalletSession::create([
             'session_id' => $sessionId,

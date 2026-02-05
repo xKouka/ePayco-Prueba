@@ -47,7 +47,7 @@ export class WalletService {
             throw new NotFoundException('Cliente no encontrado o el teléfono no coincide');
         }
 
-        // Convertimos a número para evitar problemas con decimales en MySQL
+        // Manejo de precisión decimal en base de datos
         client.balance = Number(client.balance) + Number(amount);
         await this.clientRepository.save(client);
 
